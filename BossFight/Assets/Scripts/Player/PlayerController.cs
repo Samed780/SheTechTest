@@ -22,13 +22,24 @@ public class PlayerController : MonoBehaviour
     Vector3 jumpVelocity;
     float gravityModifier;
 
+    //dodging
+    float dodgetimer;
+    [SerializeField] AnimationCurve dodgeCurve;
+
     //animation
     int isWalkingHash, isRunningHash, isJumpingHash;
+    bool isDodging;
+
+    //audio
+    AudioSource audioSource;
+    [SerializeField] AudioClip walkAudio, runAudio;
+  
 
 
     void Awake()
     {
         characterController = GetComponent<CharacterController>();
+        audioSource = GetComponent<AudioSource>();
     }
 
     // Start is called before the first frame update
@@ -37,14 +48,22 @@ public class PlayerController : MonoBehaviour
         isWalkingHash = Animator.StringToHash("isWalking");
         isRunningHash = Animator.StringToHash("isRunning");
         isJumpingHash = Animator.StringToHash("isJumping");
+
+        Keyframe dodge_LastFrame = dodgeCurve[dodgeCurve.length - 1];
+        dodgetimer = dodge_LastFrame.time;
+
     }
 
     // Update is called once per frame
     void Update()
     {
-        Move();
+        if (!isDodging) 
+        {
+            Move();
+            
+            Jump();
+        }
 
-        Jump();
         
     }
 
@@ -59,11 +78,14 @@ public class PlayerController : MonoBehaviour
             {
                 speed = 10f;
                 animator.SetBool(isRunningHash, true);
+                audioSource.clip = runAudio;
+                audioSource.Play();
             }
             if (Input.GetKeyUp(KeyCode.LeftShift))
             {
                 speed = 5f;
                 animator.SetBool(isRunningHash, false);
+                
             }
 
             float angle = Mathf.Atan2(move.x, move.z) * Mathf.Rad2Deg + cam.eulerAngles.y;
@@ -74,11 +96,19 @@ public class PlayerController : MonoBehaviour
             characterController.Move(direction.normalized * Time.deltaTime * speed);
 
             animator.SetBool(isWalkingHash, true);
+            audioSource.clip = walkAudio;
+            audioSource.Play();
+
+            if (Input.GetKeyDown(KeyCode.E))
+                StartCoroutine(Dodge());
 
         }
 
         else
+        {
             animator.SetBool(isWalkingHash, false);
+            audioSource.Stop();
+        }
 
     }
 
@@ -104,4 +134,29 @@ public class PlayerController : MonoBehaviour
         characterController.Move(jumpVelocity * Time.deltaTime);
     }
 
+    IEnumerator Dodge()
+    {
+        animator.SetTrigger("Dodge");
+        isDodging = true;
+        float timer = 0;
+
+        characterController.center = new Vector3(0, 0.5f, 0);
+        characterController.height = 1;
+
+        gravityModifier += Physics.gravity.y * Time.deltaTime;
+
+        while (timer < dodgetimer)
+        {
+            float speed = dodgeCurve.Evaluate(timer);
+            Vector3 direction = (transform.forward * speed) + (Vector3.up * gravityModifier);
+            characterController.Move(direction * Time.deltaTime);
+            timer += Time.deltaTime;
+            yield return null;
+        }
+
+        isDodging = false;
+
+        characterController.center = new Vector3(0, 1f, 0);
+        characterController.height = 2;
+    }
 }

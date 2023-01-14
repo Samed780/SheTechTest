@@ -27,7 +27,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField] AnimationCurve dodgeCurve;
 
     //animation
-    int isWalkingHash, isRunningHash, isJumpingHash;
+    int isWalkingHash, isRunningHash, isJumpingHash, isAimingHash;
     bool isDodging;
 
     //audio
@@ -48,6 +48,9 @@ public class PlayerController : MonoBehaviour
         isWalkingHash = Animator.StringToHash("isWalking");
         isRunningHash = Animator.StringToHash("isRunning");
         isJumpingHash = Animator.StringToHash("isJumping");
+        isJumpingHash = Animator.StringToHash("isJumping");
+        isAimingHash = Animator.StringToHash("Aim");
+
 
         Keyframe dodge_LastFrame = dodgeCurve[dodgeCurve.length - 1];
         dodgetimer = dodge_LastFrame.time;
@@ -62,6 +65,10 @@ public class PlayerController : MonoBehaviour
             Move();
             
             Jump();
+
+            Aim();
+
+            Attack();
         }
 
         
@@ -73,6 +80,8 @@ public class PlayerController : MonoBehaviour
 
         if (move.magnitude > 0.1f)
         {
+            audioSource.clip = walkAudio;
+            audioSource.Play();
 
             if (Input.GetKeyDown(KeyCode.LeftShift))
             {
@@ -85,7 +94,8 @@ public class PlayerController : MonoBehaviour
             {
                 speed = 5f;
                 animator.SetBool(isRunningHash, false);
-                
+                audioSource.clip = walkAudio;
+                audioSource.Play();
             }
 
             float angle = Mathf.Atan2(move.x, move.z) * Mathf.Rad2Deg + cam.eulerAngles.y;
@@ -96,8 +106,6 @@ public class PlayerController : MonoBehaviour
             characterController.Move(direction.normalized * Time.deltaTime * speed);
 
             animator.SetBool(isWalkingHash, true);
-            audioSource.clip = walkAudio;
-            audioSource.Play();
 
             if (Input.GetKeyDown(KeyCode.E))
                 StartCoroutine(Dodge());
@@ -156,7 +164,22 @@ public class PlayerController : MonoBehaviour
 
         isDodging = false;
 
-        characterController.center = new Vector3(0, 1f, 0);
+        characterController.center = new Vector3(0, 1.1f, 0);
         characterController.height = 2;
+    }
+
+    void Aim()
+    {
+        if (Input.GetMouseButton(1))
+            animator.SetBool(isAimingHash, true);
+        else
+            animator.SetBool(isAimingHash, false);
+
+    }
+
+    void Attack()
+    {
+        if (Input.GetMouseButtonDown(0))
+            animator.SetTrigger("Attack");
     }
 }

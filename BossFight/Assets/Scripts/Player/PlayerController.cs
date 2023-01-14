@@ -18,13 +18,19 @@ public class PlayerController : MonoBehaviour
     private float turnSmoothVelocity;
 
     //jumping
-    [SerializeField] float jumpForce = 5f;
+    [SerializeField] float jumpForce = 2f;
     Vector3 jumpVelocity;
     float gravityModifier;
 
     //dodging
     float dodgetimer;
     [SerializeField] AnimationCurve dodgeCurve;
+
+    //attacking
+    [SerializeField] float coolDown = 2f, nextFire = 0;
+    [SerializeField] GameObject arrow;
+    [SerializeField] Transform spawnPoint;
+    [SerializeField] float arrowSpeed = 30; 
 
     //animation
     int isWalkingHash, isRunningHash, isJumpingHash, isAimingHash;
@@ -69,8 +75,8 @@ public class PlayerController : MonoBehaviour
             Aim();
 
             Attack();
+        
         }
-
         
     }
 
@@ -171,7 +177,13 @@ public class PlayerController : MonoBehaviour
     void Aim()
     {
         if (Input.GetMouseButton(1))
+        {
             animator.SetBool(isAimingHash, true);
+            //float angle = Mathf.Rad2Deg + cam.eulerAngles.y;
+            //float rotationAngle = Mathf.SmoothDampAngle(transform.eulerAngles.y, angle, ref turnSmoothVelocity, rotationSmoothTime);
+            //transform.rotation = Quaternion.Euler(0, rotationAngle, 0);
+
+        }
         else
             animator.SetBool(isAimingHash, false);
 
@@ -179,7 +191,17 @@ public class PlayerController : MonoBehaviour
 
     void Attack()
     {
-        if (Input.GetMouseButtonDown(0))
-            animator.SetTrigger("Attack");
+        if (Time.time > nextFire)
+        {
+            if (Input.GetMouseButtonDown(0))
+            {
+                animator.SetTrigger("Attack");
+                nextFire = Time.time + coolDown;
+                GameObject arrowPrefab = Instantiate(arrow, spawnPoint.position, spawnPoint.rotation);
+                arrowPrefab.GetComponent<Rigidbody>().velocity = spawnPoint.forward * arrowSpeed;
+            }
+        }
     }
+
+    
 }

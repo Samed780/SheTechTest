@@ -19,6 +19,13 @@ public class BossController : MonoBehaviour
     void Update()
     {
         MeleeAttack();
+
+        RangedAttack();
+    }
+
+    void RangedAttack()
+    {
+        animator.SetTrigger("RangedAttack");
     }
 
     void MeleeAttack()

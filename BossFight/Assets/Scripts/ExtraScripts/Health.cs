@@ -9,6 +9,7 @@ public class Health : MonoBehaviour
 
     //every 1 armor is 2% less damage 
     public float armor;
+    float numberOfHits = 0;
 
 
     private void Start()
@@ -23,10 +24,32 @@ public class Health : MonoBehaviour
             if (armor < 50)
             {
                 damage -= armor * damage * 0.02f; 
-                currentHealth -= damage;
+              currentHealth -= damage;
             }
             else
                 damage = 0;
         }
+    }
+
+    public void ArmorPen(float armorPen)
+    {
+        switch (numberOfHits)
+        {
+            case 5:
+                armor -= armor * armorPen;
+                break;
+            case 10:
+                armor -= armor * 2 * armorPen;
+                break;
+            case 20:
+                armor -= armor * 5 * armorPen;
+                break;
+        }
+    }
+
+    private void OnCollisionEnter(Collision collision)
+    {
+        if(collision.gameObject.GetComponent<Arrow>() != null)
+            numberOfHits++;
     }
 }

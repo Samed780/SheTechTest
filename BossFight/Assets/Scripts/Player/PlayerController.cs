@@ -179,9 +179,9 @@ public class PlayerController : MonoBehaviour
         if (Input.GetMouseButton(1))
         {
             animator.SetBool(isAimingHash, true);
-            //float angle = Mathf.Rad2Deg + cam.eulerAngles.y;
-            //float rotationAngle = Mathf.SmoothDampAngle(transform.eulerAngles.y, angle, ref turnSmoothVelocity, rotationSmoothTime);
-            //transform.rotation = Quaternion.Euler(0, rotationAngle, 0);
+            float angle = Mathf.Rad2Deg + cam.eulerAngles.y;
+            float rotationAngle = Mathf.SmoothDampAngle(transform.eulerAngles.y, angle, ref turnSmoothVelocity, rotationSmoothTime);
+            transform.rotation = Quaternion.Euler(0, rotationAngle, 0);
 
         }
         else

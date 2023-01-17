@@ -4,12 +4,16 @@ using UnityEngine;
 
 public class Health : MonoBehaviour
 {
-    [SerializeField] float maxHealth;
-    [SerializeField] float currentHealth;
+    //references
+    [SerializeField] Animator animator;
+
+    public float maxHealth;
+    public float currentHealth;
 
     //every 1 armor is 2% less damage 
     public float armor;
     float numberOfHits = 0;
+
 
 
     private void Start()
@@ -23,12 +27,15 @@ public class Health : MonoBehaviour
         {
             if (armor < 50)
             {
-                damage -= armor * damage * 0.02f; 
-              currentHealth -= damage;
+                damage -= armor * damage * 0.02f;
+                currentHealth -= damage;
+                animator.SetTrigger("Damage");
             }
             else
                 damage = 0;
         }
+        else
+            Death();
     }
 
     public void ArmorPen(float armorPen)
@@ -45,6 +52,12 @@ public class Health : MonoBehaviour
                 armor -= armor * 5 * armorPen;
                 break;
         }
+    }
+
+    void Death()
+    {
+        animator.SetTrigger("Death");
+        Destroy(gameObject, 5f);
     }
 
     private void OnCollisionEnter(Collision collision)

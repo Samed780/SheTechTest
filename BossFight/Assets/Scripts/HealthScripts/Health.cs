@@ -54,6 +54,17 @@ public class Health : MonoBehaviour
         }
     }
 
+    public void DamageOverSec(float burnDamage, float duration)
+    {
+        float timer = 0f;
+
+        while(timer < duration)
+        {
+            currentHealth -= burnDamage;
+            timer += Time.time; 
+        }
+    }
+
     void Death()
     {
         animator.SetTrigger("Death");

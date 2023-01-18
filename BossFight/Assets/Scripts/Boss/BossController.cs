@@ -12,9 +12,13 @@ public class BossController : MonoBehaviour
     Health bossHealth;
 
     //attacking
-    [SerializeField] float attackRange = 20f, meleeRange = 10f;
+    [SerializeField] float attackRange = 20f, meleeRange = 10f, attackRate = 2.2f, nextAttack = 0, fireBall_Speed = 20f;
     [SerializeField] GameObject fireBall;
     [SerializeField] GameObject specialAttack;
+    [SerializeField] Transform spawnPoint;
+    bool canDoSpecialAttack = false;
+    int numberOfSpecialAttacks = 1;
+
 
     //animation
     int isWalkingHash, isRunningHash;
@@ -43,13 +47,23 @@ public class BossController : MonoBehaviour
         if (bossHealth.currentHealth >= bossHealth.maxHealth * 0.75)
             TrackPlayer();
 
-        else if (bossHealth.currentHealth <= bossHealth.maxHealth * 0.2)
+        else if(CanPerfprmSpecialAttack() && numberOfSpecialAttacks == 1)
+        {
             SpecialAttack();
+            numberOfSpecialAttacks = 0;
+        }
     }
 
     void RangedAttack()
     {
-        animator.SetTrigger("RangedAttack");
+        if(Time.time > nextAttack)
+        {
+            animator.SetTrigger("RangedAttack");
+            nextAttack += Time.time + attackRate;
+            GameObject ballPrefab = Instantiate(fireBall, spawnPoint.position, spawnPoint.rotation);
+            ballPrefab.GetComponent<Rigidbody>().velocity = spawnPoint.forward * fireBall_Speed;
+        }
+        //use animation event instead
     }
 
     void MeleeAttack()
@@ -83,6 +97,7 @@ public class BossController : MonoBehaviour
             boss.SetDestination(player.transform.position);
             animator.SetBool(isWalkingHash, true);
             animator.SetBool(isRunningHash, false);
+            nextAttack = 0;
         }
 
         else if(PlayerInAttackRange() && !PlayerInMeleeRange())
@@ -113,15 +128,22 @@ public class BossController : MonoBehaviour
 
     void SpecialAttack()
     {
-
+        GameObject electricity = Instantiate(specialAttack, spawnPoint.position, spawnPoint.rotation);
+        //use animations events to call function on the right frame
     }
 
     bool PlayerInAttackRange()
     {
-        return Vector3.Distance(transform.position, player.transform.position) <= attackRange;
+        return (Vector3.Distance(transform.position, player.transform.position) <= attackRange);
     }
     bool PlayerInMeleeRange()
     {
-        return Vector3.Distance(transform.position, player.transform.position) <= meleeRange;
+        return (Vector3.Distance(transform.position, player.transform.position) <= meleeRange);
+    }
+
+    bool CanPerfprmSpecialAttack()
+    {
+        canDoSpecialAttack = bossHealth.currentHealth <= bossHealth.maxHealth * 0.2;
+        return canDoSpecialAttack;
     }
 }
